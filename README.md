@@ -21,7 +21,7 @@ jbang script_name.java >> inserts.sql
 
 | Script | Schema | Targets |
 | ------ | ------ | ------- |
-| scripts/hr_schema.java | HR | mysql, postgresql |
+| scripts/hr_schema.java | [HR](#hr-schema-sql) | mysql, postgresql |
 
 # Supported Schemas
 
