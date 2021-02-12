@@ -27,4 +27,8 @@ jbang script_name.java >> inserts.sql
 
 ## HR Schema (SQL)
 
+If you ever had the chance to work with [Oracle DB](https://www.oracle.com/ro/database/technologies/) this is probably one of the most known sample schemas to play with. 
+
+It models an HR application containing information about the Company's Locations, Departements, Employees and their Managers.
+
 ![HR Schema](https://github.com/nomemory/neat-sample-databases-generators/blob/main/assets/hr-schema.png)
