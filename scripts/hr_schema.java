@@ -1,12 +1,11 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS info.picocli:picocli:4.5.0
+//DEPS info.picocli:picocli:4.6.1
 //DEPS net.andreinc:mockneat:0.4.5
 
 import net.andreinc.mockneat.abstraction.MockUnitString;
 import net.andreinc.mockneat.unit.text.sql.SQLTable;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Parameters;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -32,6 +31,7 @@ import static net.andreinc.mockneat.unit.time.LocalDates.localDates;
 import static net.andreinc.mockneat.unit.types.Ints.ints;
 import static net.andreinc.mockneat.unit.user.Emails.emails;
 import static net.andreinc.mockneat.unit.user.Names.names;
+import static picocli.CommandLine.Help.Visibility.ALWAYS;
 
 @Command(
         name = "hr_schema",
@@ -41,27 +41,62 @@ import static net.andreinc.mockneat.unit.user.Names.names;
 )
 class hr_schema implements Callable<Integer> {
 
-    @Parameters(
-            index = "0",
-            description = "The greeting to print",
-            defaultValue = "World!"
+    // const
+    final int NUM_COUNTRIES = 241;
+
+    @CommandLine.Option(
+            names = { "-l", "--locations" },
+            description = "The number of locations to be generated",
+            defaultValue = "100",
+            showDefaultValue = ALWAYS
+
     )
-    private String greeting;
+    int numLocations = 100;
+
+    @CommandLine.Option(
+            names = { "-e", "--employees" },
+            description = "The number of employees to be generated",
+            defaultValue = "1000",
+            showDefaultValue = ALWAYS
+    )
+    int numEmployees = 1000;
+
+    @CommandLine.Option(
+            names = { "-m", "--managers" },
+            description = "The maximum number of managers.",
+            defaultValue = "50",
+            showDefaultValue = ALWAYS
+    )
+    int numManagers = 50;
+
+    @CommandLine.Option(
+        names = { "-ms", "--min-salary" },
+        description = "The minimum salary an employee can get",
+        defaultValue = "1000",
+        showDefaultValue = ALWAYS
+    )
+    int minSalary = 1000;
+
+    @CommandLine.Option(
+            names = {"-Ms", "--max-salary" },
+            description = "The maximum salary an employee can get",
+            defaultValue = "15000",
+            showDefaultValue = ALWAYS
+    )
+    int maxSalary = 15000;
+
+    @CommandLine.Option(
+            names = { "-t", "--target" },
+            description = "The target database. Supported options: mysql | postgresql",
+            defaultValue = "mysql",
+            showDefaultValue = ALWAYS
+    )
+    String target = "mysql";
 
     public static void main(String... args) {
         int exitCode = new CommandLine(new hr_schema()).execute(args);
         System.exit(exitCode);
     }
-
-
-    // Script
-
-    int NUM_COUNTRIES = 241;
-    int NUM_LOCATIONS = 100;
-    int NUM_EMPLOYEES = 1000;
-    int NUM_MANAGERS = 50;
-    int MIN_SALARY = 1000;
-    int MAX_SALARY = 15000;
 
     String[] regionNames = new String[] {
             "Europe",
@@ -108,8 +143,16 @@ class hr_schema implements Callable<Integer> {
                     .param("word1", strings().size(3).format(UPPER_CASE))
                     .param("word2", strings().size(3).format(UPPER_CASE));
 
+    public void validateCall() {
+        if (numManagers >= numEmployees) {
+            throw new IllegalArgumentException("The number of managers cannot be bigger than the number of employees");
+        }
+    }
+
     @Override
     public Integer call() {
+
+        validateCall();
 
         SQLTable regions =
                 sqlInserts()
@@ -137,15 +180,15 @@ class hr_schema implements Callable<Integer> {
                 .column("city", cities().us(), TEXT_BACKSLASH)
                 .column("state_province", cities().capitals(), TEXT_BACKSLASH)
                 .column("country_id", countries.fromColumn("country_id"), TEXT_BACKSLASH)
-                .table(NUM_LOCATIONS)
+                .table(numLocations)
                 .get();
 
         SQLTable jobs = sqlInserts()
                 .tableName("jobs")
                 .column("job_id", seq(jobIds), TEXT_BACKSLASH)
                 .column("job_title", seq(jobNames), TEXT_BACKSLASH)
-                .column("min_salary", MIN_SALARY + "")
-                .column("max_salary", MAX_SALARY + "")
+                .column("min_salary", minSalary + "")
+                .column("max_salary", maxSalary + "")
                 .table(jobNames.length)
                 .val();
 
@@ -171,18 +214,18 @@ class hr_schema implements Callable<Integer> {
                                 .past(LocalDate.of(2000, 1, 1))
                                 .display(BASIC_ISO_DATE), TEXT_BACKSLASH)
                 .column("job_id", jobs.fromColumn("job_id"), TEXT_BACKSLASH)
-                .column("salary", ints().range(MIN_SALARY, MAX_SALARY))
+                .column("salary", ints().range(minSalary, maxSalary))
                 .column("commission_pct", "NULL")
                 .column("manager_id", constant(""))
                 .column("department_id", departments.fromColumn("department_id"))
-                .table(NUM_EMPLOYEES)
+                .table(numEmployees)
                 .val();
 
         List<Integer> managersIds =
                 employees
                 .fromColumn("employee_id")
                 .map(Integer::parseInt)
-                .list(NUM_MANAGERS)
+                .list(numManagers)
                 .get();
 
         departments.updateAll((i, insert) -> insert.setValue("manager_id", from(managersIds).get() + ""));
