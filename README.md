@@ -22,3 +22,9 @@ jbang script_name.java >> inserts.sql
 | Script | Schema | Targets |
 | ------ | ------ | ------- |
 | scripts/hr_schema.java | HR | mysql, postgresql |
+
+# Supported Schemas
+
+## HR Schema (SQL)
+
+![HR Schema](https://github.com/nomemory/neat-sample-databases-generators/blob/main/assets/hr-schema.png)
