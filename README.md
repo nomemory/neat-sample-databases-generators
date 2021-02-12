@@ -23,6 +23,12 @@ jbang script_name.java >> inserts.sql
 | ------ | ------ | ------- |
 | scripts/hr_schema.java | [HR](#hr-schema-sql) | mysql, postgresql |
 
+After cloning the project:
+
+```sh
+jbang scripts/hr_schema.java >> inserts.sql
+```
+
 # Supported Schemas
 
 ## HR Schema (SQL)
