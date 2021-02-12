@@ -13,7 +13,7 @@ sdk install java
 sdk install jbang
 ```
 
-Afterwards scripts can be run using:
+Scripts can be run using:
 
 ```
 jbang script_name.java
