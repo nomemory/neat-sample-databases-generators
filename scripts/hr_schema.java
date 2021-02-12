@@ -4,12 +4,15 @@
 
 import net.andreinc.mockneat.abstraction.MockUnitString;
 import net.andreinc.mockneat.unit.text.sql.SQLTable;
+import net.andreinc.mockneat.unit.text.sql.escapers.MySQL;
+import net.andreinc.mockneat.unit.text.sql.escapers.PostgreSQL;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 import static java.lang.Integer.parseInt;
 import static java.time.format.DateTimeFormatter.BASIC_ISO_DATE;
@@ -26,7 +29,6 @@ import static net.andreinc.mockneat.unit.text.Formatter.fmt;
 import static net.andreinc.mockneat.unit.text.SQLInserts.sqlInserts;
 import static net.andreinc.mockneat.unit.text.Strings.strings;
 import static net.andreinc.mockneat.unit.text.Words.words;
-import static net.andreinc.mockneat.unit.text.sql.escapers.MySQL.TEXT_BACKSLASH;
 import static net.andreinc.mockneat.unit.time.LocalDates.localDates;
 import static net.andreinc.mockneat.unit.types.Ints.ints;
 import static net.andreinc.mockneat.unit.user.Emails.emails;
@@ -147,6 +149,10 @@ class hr_schema implements Callable<Integer> {
         if (numManagers >= numEmployees) {
             throw new IllegalArgumentException("The number of managers cannot be bigger than the number of employees");
         }
+
+        if (target != "mysql" && target !="postgresql") {
+            throw new IllegalArgumentException("Invalid target: " + target + ". Accepted values: 'postgresql' or 'mysql'");
+        }
     }
 
     @Override
@@ -154,19 +160,22 @@ class hr_schema implements Callable<Integer> {
 
         validateCall();
 
+        Function<String, String> escape =
+                target.equals("mysql") ? MySQL.TEXT_BACKSLASH : PostgreSQL.TEXT_BACKSLASH;
+
         SQLTable regions =
                 sqlInserts()
                 .tableName("regions")
                 .column("region_id", intSeq().start(1))
-                .column("region_name", seq(regionNames), TEXT_BACKSLASH)
+                .column("region_name", seq(regionNames), escape)
                 .table(regionNames.length)
                 .get();
 
         SQLTable countries =
                 sqlInserts()
                 .tableName("countries")
-                .column("country_id",  seq(COUNTRY_ISO_CODE_2), TEXT_BACKSLASH)
-                .column("country_name", seq(COUNTRY_NAME), TEXT_BACKSLASH)
+                .column("country_id",  seq(COUNTRY_ISO_CODE_2), escape)
+                .column("country_name", seq(COUNTRY_NAME), escape)
                 .column("region_id", regions.fromColumn("region_id"))
                 .table(NUM_COUNTRIES)
                 .get();
@@ -175,18 +184,18 @@ class hr_schema implements Callable<Integer> {
                 sqlInserts()
                 .tableName("locations")
                 .column("location_id", intSeq().start(1000).increment(100))
-                .column("street_address", streets, TEXT_BACKSLASH)
-                .column("postal_code", postalCodes, TEXT_BACKSLASH)
-                .column("city", cities().us(), TEXT_BACKSLASH)
-                .column("state_province", cities().capitals(), TEXT_BACKSLASH)
-                .column("country_id", countries.fromColumn("country_id"), TEXT_BACKSLASH)
+                .column("street_address", streets, escape)
+                .column("postal_code", postalCodes, escape)
+                .column("city", cities().us(), escape)
+                .column("state_province", cities().capitals(), escape)
+                .column("country_id", countries.fromColumn("country_id"), escape)
                 .table(numLocations)
                 .get();
 
         SQLTable jobs = sqlInserts()
                 .tableName("jobs")
-                .column("job_id", seq(jobIds), TEXT_BACKSLASH)
-                .column("job_title", seq(jobNames), TEXT_BACKSLASH)
+                .column("job_id", seq(jobIds), escape)
+                .column("job_title", seq(jobNames), escape)
                 .column("min_salary", minSalary + "")
                 .column("max_salary", maxSalary + "")
                 .table(jobNames.length)
@@ -195,7 +204,7 @@ class hr_schema implements Callable<Integer> {
         SQLTable departments = sqlInserts()
                 .tableName("departments")
                 .column("department_id", intSeq().start(0).increment(10))
-                .column("department_name",seq(DEPARTMENTS), TEXT_BACKSLASH)
+                .column("department_name",seq(DEPARTMENTS), escape)
                 .column("manager_id", constant(""))
                 .column("location_id", locations.fromColumn("location_id"))
                 .table(DEPARTMENTS.size())
@@ -205,15 +214,15 @@ class hr_schema implements Callable<Integer> {
                 sqlInserts()
                 .tableName("employees")
                 .column("employee_id", intSeq())
-                .column("first_name", names().first(), TEXT_BACKSLASH)
-                .column("last_name", names().last(), TEXT_BACKSLASH)
-                .column("email", emails().domain("corp.com"), TEXT_BACKSLASH)
-                .column("phone_number", regex("\\+30 [0-9]{9}"), TEXT_BACKSLASH)
+                .column("first_name", names().first(), escape)
+                .column("last_name", names().last(), escape)
+                .column("email", emails().domain("corp.com"), escape)
+                .column("phone_number", regex("\\+30 [0-9]{9}"), escape)
                 .column("hire_date",
                         localDates()
                                 .past(LocalDate.of(2000, 1, 1))
-                                .display(BASIC_ISO_DATE), TEXT_BACKSLASH)
-                .column("job_id", jobs.fromColumn("job_id"), TEXT_BACKSLASH)
+                                .display(BASIC_ISO_DATE), escape)
+                .column("job_id", jobs.fromColumn("job_id"), escape)
                 .column("salary", ints().range(minSalary, maxSalary))
                 .column("commission_pct", "NULL")
                 .column("manager_id", constant(""))
