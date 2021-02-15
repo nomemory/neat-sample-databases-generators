@@ -1,7 +1,6 @@
-A collection of scripts that are generating data for various SQL Sample schemas.
+In case you ever needed scripts to generate data for pre-defined sample databases (databases that are already modeled for various real-life scenarios), this repositoru contains exactly this.
 
 Scripts should be run using [jbang](https://github.com/jbangdev/jbang).
-
 To install jbang - check the official documentation - or simply:
 
 ```sh
@@ -10,6 +9,10 @@ source ~/.bash_profile
 sdk install java 
 sdk install jbang
 ```
+
+Data is generated using [mockneat](https://www.mockneat.com).
+
+Contributions are welcomed!
 
 # List of scripts
 
