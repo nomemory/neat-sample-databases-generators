@@ -38,37 +38,6 @@ Most scripts support various options (e.g.: generating more data, or target vari
 jbang scripts/hr_schema_mysql.java --help
 ```
 
-Output:
-
-```
-Usage: hr_schema [-hV] [-e=<numEmployees>] [-l=<numLocations>]
-                 [-m=<numManagers>] [-ms=<minSalary>] [-Ms=<maxSalary>]
-                 [-t=<target>]
-                 
-Script to generate SQL Inserts for HR Schema
-
-  -e, --employees=<numEmployees>
-                          The number of employees to be generated
-                            Default: 1000
-  -h, --help              Show this help message and exit.
-  -l, --locations=<numLocations>
-                          The number of locations to be generated
-                            Default: 100
-  -m, --managers=<numManagers>
-                          The maximum number of managers.
-                            Default: 50
-  -ms, --min-salary=<minSalary>
-                          The minimum salary an employee can get
-                            Default: 1000
-  -Ms, --max-salary=<maxSalary>
-                          The maximum salary an employee can get
-                            Default: 15000
-  -t, --target=<target>   The target database. Supported options: mysql |
-                            postgresql
-                            Default: mysql
-  -V, --version           Print version information and exit.
-```
-
 # Supported Schemas
 
 ## HR Schema (SQL)
