@@ -9,8 +9,11 @@ import net.andreinc.mockneat.unit.text.sql.escapers.PostgreSQL;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
@@ -89,16 +92,11 @@ class hr_schema implements Callable<Integer> {
 
     @CommandLine.Option(
             names = { "-t", "--target" },
-            description = "The target database. Supported options: mysql | postgresql",
+            description = "The target database. Supported options: mysql | mariadb | postgresql",
             defaultValue = "mysql",
             showDefaultValue = ALWAYS
     )
     String target = "mysql";
-
-    public static void main(String... args) {
-        int exitCode = new CommandLine(new hr_schema()).execute(args);
-        System.exit(exitCode);
-    }
 
     String[] regionNames = new String[] {
             "Europe",
@@ -134,6 +132,123 @@ class hr_schema implements Callable<Integer> {
             "D"
     };
 
+    String schemaCreate =
+            "DROP SCHEMA IF EXISTS hr;\n" +
+            "CREATE SCHEMA hr COLLATE = utf8_general_ci;\n" +
+            "USE hr;";
+
+    String ddl =
+            "CREATE TABLE regions (\n" +
+                    "\tregion_id INT (11) UNSIGNED NOT NULL,\n" +
+                    "\tregion_name VARCHAR(25),\n" +
+                    "\tPRIMARY KEY (region_id)\n" +
+                    "\t);\n" +
+                    "\n" +
+            "CREATE TABLE countries (\n" +
+                    "\tcountry_id CHAR(2) NOT NULL,\n" +
+                    "\tcountry_name VARCHAR(128),\n" +
+                    "\tregion_id INT (11) UNSIGNED NOT NULL,\n" +
+                    "\tPRIMARY KEY (country_id)\n" +
+                    ");\n" +
+                    "\n" +
+                    "\n" +
+            "CREATE TABLE locations (\n" +
+                    "\tlocation_id INT (11) UNSIGNED NOT NULL AUTO_INCREMENT,\n" +
+                    "\tstreet_address VARCHAR(40),\n" +
+                    "\tpostal_code VARCHAR(12),\n" +
+                    "\tcity VARCHAR(30) NOT NULL,\n" +
+                    "\tstate_province VARCHAR(25),\n" +
+                    "\tcountry_id CHAR(2) NOT NULL,\n" +
+                    "\tPRIMARY KEY (location_id)\n" +
+                    "\t);\n" +
+                    "\n" +
+            "CREATE TABLE departments (\n" +
+                    "\tdepartment_id INT (11) UNSIGNED NOT NULL,\n" +
+                    "\tdepartment_name VARCHAR(30) NOT NULL,\n" +
+                    "\tmanager_id INT (11) UNSIGNED,\n" +
+                    "\tlocation_id INT (11) UNSIGNED,\n" +
+                    "\tPRIMARY KEY (department_id)\n" +
+                    "\t);\n" +
+                    "\n" +
+            "CREATE TABLE jobs (\n" +
+                    "\tjob_id VARCHAR(10) NOT NULL,\n" +
+                    "\tjob_title VARCHAR(35) NOT NULL,\n" +
+                    "\tmin_salary DECIMAL(8, 0) UNSIGNED,\n" +
+                    "\tmax_salary DECIMAL(8, 0) UNSIGNED,\n" +
+                    "\tPRIMARY KEY (job_id)\n" +
+                    "\t);\n" +
+                    "\n" +
+            "CREATE TABLE employees (\n" +
+                    "\temployee_id INT (11) UNSIGNED NOT NULL,\n" +
+                    "\tfirst_name VARCHAR(20),\n" +
+                    "\tlast_name VARCHAR(25) NOT NULL,\n" +
+                    "\temail VARCHAR(128) NOT NULL,\n" +
+                    "\tphone_number VARCHAR(20),\n" +
+                    "\thire_date DATE NOT NULL,\n" +
+                    "\tjob_id VARCHAR(10) NOT NULL,\n" +
+                    "\tsalary DECIMAL(8, 2) NOT NULL,\n" +
+                    "\tcommission_pct DECIMAL(2, 2),\n" +
+                    "\tmanager_id INT (11) UNSIGNED,\n" +
+                    "\tdepartment_id INT (11) UNSIGNED,\n" +
+                    "\tPRIMARY KEY (employee_id)\n" +
+                    "\t);\n" +
+                    "\n" +
+            "CREATE TABLE job_history (\n" +
+                    "\temployee_id INT (11) UNSIGNED NOT NULL,\n" +
+                    "\tstart_date DATE NOT NULL,\n" +
+                    "\tend_date DATE NOT NULL,\n" +
+                    "\tjob_id VARCHAR(10) NOT NULL,\n" +
+                    "\tdepartment_id INT (11) UNSIGNED NOT NULL\n" +
+                    "\t);\n" +
+                    "\n" +
+            "ALTER TABLE job_history ADD UNIQUE INDEX (\n" +
+                    "\temployee_id,\n" +
+                    "\tstart_date\n" +
+                    "\t);\n" +
+                    "\n" +
+                    "\n" +
+            "CREATE VIEW emp_details_view\n" +
+                    "AS\n" +
+                    "SELECT e.employee_id,\n" +
+                    "\te.job_id,\n" +
+                    "\te.manager_id,\n" +
+                    "\te.department_id,\n" +
+                    "\td.location_id,\n" +
+                    "\tl.country_id,\n" +
+                    "\te.first_name,\n" +
+                    "\te.last_name,\n" +
+                    "\te.salary,\n" +
+                    "\te.commission_pct,\n" +
+                    "\td.department_name,\n" +
+                    "\tj.job_title,\n" +
+                    "\tl.city,\n" +
+                    "\tl.state_province,\n" +
+                    "\tc.country_name,\n" +
+                    "\tr.region_name\n" +
+                    "FROM employees e,\n" +
+                    "\tdepartments d,\n" +
+                    "\tjobs j,\n" +
+                    "\tlocations l,\n" +
+                    "\tcountries c,\n" +
+                    "\tregions r\n" +
+                    "WHERE e.department_id = d.department_id\n" +
+                    "\tAND d.location_id = l.location_id\n" +
+                    "\tAND l.country_id = c.country_id\n" +
+                    "\tAND c.region_id = r.region_id\n" +
+                    "\tAND j.job_id = e.job_id;";
+
+    String foreignKeys =
+            "ALTER TABLE countries ADD FOREIGN KEY (region_id) REFERENCES regions(region_id);    \n" +
+            "ALTER TABLE locations ADD FOREIGN KEY (country_id) REFERENCES countries(country_id);\n" +
+            "ALTER TABLE departments ADD FOREIGN KEY (location_id) REFERENCES locations(location_id);\n" +
+            "ALTER TABLE employees ADD FOREIGN KEY (job_id) REFERENCES jobs(job_id);\n" +
+            "ALTER TABLE employees ADD FOREIGN KEY (department_id) REFERENCES departments(department_id);\n" +
+            "ALTER TABLE employees ADD FOREIGN KEY (manager_id) REFERENCES employees(employee_id);\n" +
+            "ALTER TABLE departments ADD FOREIGN KEY (manager_id) REFERENCES employees (employee_id);\n" +
+            "ALTER TABLE job_history ADD FOREIGN KEY (employee_id) REFERENCES employees(employee_id);\n" +
+            "ALTER TABLE job_history ADD FOREIGN KEY (job_id) REFERENCES jobs(job_id);\n" +
+            "ALTER TABLE job_history ADD FOREIGN KEY (department_id) REFERENCES departments(department_id);";
+
     public final MockUnitString streets =
             fmt("#{num} #{noun} #{end}")
             .param("num", ints().range(10, 2000))
@@ -145,12 +260,20 @@ class hr_schema implements Callable<Integer> {
                     .param("word1", strings().size(3).format(UPPER_CASE))
                     .param("word2", strings().size(3).format(UPPER_CASE));
 
+    public static String sanitizeName(String text) {
+        return text == null ? null :
+                Normalizer
+                        .normalize(text, Normalizer.Form.NFD)
+                        .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                        .replaceAll("[^A-Za-z ]", "");
+    }
+
     public void validateCall() {
         if (numManagers >= numEmployees) {
             throw new IllegalArgumentException("The number of managers cannot be bigger than the number of employees");
         }
 
-        if (target != "mysql" && target !="postgresql") {
+        if (!Set.of("mysql", "mariadb", "postgresql").contains(target)) {
             throw new IllegalArgumentException("Invalid target: " + target + ". Accepted values: 'postgresql' or 'mysql'");
         }
     }
@@ -161,7 +284,8 @@ class hr_schema implements Callable<Integer> {
         validateCall();
 
         Function<String, String> escape =
-                target.equals("mysql") ? MySQL.TEXT_BACKSLASH : PostgreSQL.TEXT_BACKSLASH;
+                target.equals("mysql") || target.equals("mariadb") ?
+                        MySQL.TEXT_BACKSLASH : PostgreSQL.TEXT_BACKSLASH;
 
         SQLTable regions =
                 sqlInserts()
@@ -216,7 +340,7 @@ class hr_schema implements Callable<Integer> {
                 .column("employee_id", intSeq())
                 .column("first_name", names().first(), escape)
                 .column("last_name", names().last(), escape)
-                .column("email", emails().domain("corp.com"), escape)
+                .column("email", "NULL", escape)
                 .column("phone_number", regex("\\+30 [0-9]{9}"), escape)
                 .column("hire_date",
                         localDates()
@@ -240,23 +364,37 @@ class hr_schema implements Callable<Integer> {
         departments.updateAll((i, insert) -> insert.setValue("manager_id", from(managersIds).get() + ""));
 
         employees.updateAll((i, insert) -> {
+            // Manager id
             Integer employeeId = parseInt(insert.getValue("employee_id"));
             Integer managerId;
             while(employeeId == (managerId = from(managersIds).val()));
             insert.setValue("manager_id", managerId + "");
+            // Emails
+            String firstName = sanitizeName(insert.getValue("first_name")).toLowerCase();
+            String lastName = sanitizeName(insert.getValue("last_name")).toLowerCase();
+            String email = firstName + "." + lastName + "@corporation.com";
+            insert.setValue("email", email);
         });
 
         employees.selectFirstWhere(sqlInsert -> sqlInsert.getValue("job_id").equals("D"))
                 .get()
                 .setValue("manager_id", "NULL");
 
+        System.out.println(schemaCreate);
+        System.out.println(ddl);
         System.out.println(regions);
         System.out.println(countries);
         System.out.println(jobs);
         System.out.println(locations);
         System.out.println(departments);
         System.out.println(employees);
+        System.out.println(foreignKeys);
 
         return 0;
+    }
+
+    public static void main(String... args) {
+        int exitCode = new CommandLine(new hr_schema()).execute(args);
+        System.exit(exitCode);
     }
 }
