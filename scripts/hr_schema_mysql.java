@@ -5,14 +5,12 @@
 import net.andreinc.mockneat.abstraction.MockUnitString;
 import net.andreinc.mockneat.unit.text.sql.SQLTable;
 import net.andreinc.mockneat.unit.text.sql.escapers.MySQL;
-import net.andreinc.mockneat.unit.text.sql.escapers.PostgreSQL;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
 import java.text.Normalizer;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -34,7 +32,6 @@ import static net.andreinc.mockneat.unit.text.Strings.strings;
 import static net.andreinc.mockneat.unit.text.Words.words;
 import static net.andreinc.mockneat.unit.time.LocalDates.localDates;
 import static net.andreinc.mockneat.unit.types.Ints.ints;
-import static net.andreinc.mockneat.unit.user.Emails.emails;
 import static net.andreinc.mockneat.unit.user.Names.names;
 import static picocli.CommandLine.Help.Visibility.ALWAYS;
 
@@ -42,9 +39,9 @@ import static picocli.CommandLine.Help.Visibility.ALWAYS;
         name = "hr_schema",
         mixinStandardHelpOptions = true,
         version = "1.0",
-        description = "Script to generate SQL Inserts for HR Schema"
+        description = "Script to generate SQL Inserts for HR Schema (MySQL|MariaDB)"
 )
-class hr_schema implements Callable<Integer> {
+class hr_schema_mysql implements Callable<Integer> {
 
     // const
     final int NUM_COUNTRIES = 241;
@@ -90,14 +87,6 @@ class hr_schema implements Callable<Integer> {
     )
     int maxSalary = 15000;
 
-    @CommandLine.Option(
-            names = { "-t", "--target" },
-            description = "The target database. Supported options: mysql | mariadb | postgresql",
-            defaultValue = "mysql",
-            showDefaultValue = ALWAYS
-    )
-    String target = "mysql";
-
     String[] regionNames = new String[] {
             "Europe",
             "Americas",
@@ -132,12 +121,12 @@ class hr_schema implements Callable<Integer> {
             "D"
     };
 
-    String schemaCreate =
+    String schemaCreateMySQL =
             "DROP SCHEMA IF EXISTS hr;\n" +
             "CREATE SCHEMA hr COLLATE = utf8_general_ci;\n" +
             "USE hr;";
 
-    String ddl =
+    String ddlMySQL =
             "CREATE TABLE regions (\n" +
                     "\tregion_id INT (11) UNSIGNED NOT NULL,\n" +
                     "\tregion_name VARCHAR(25),\n" +
@@ -237,7 +226,7 @@ class hr_schema implements Callable<Integer> {
                     "\tAND c.region_id = r.region_id\n" +
                     "\tAND j.job_id = e.job_id;";
 
-    String foreignKeys =
+    String foreignKeysMySQL =
             "ALTER TABLE countries ADD FOREIGN KEY (region_id) REFERENCES regions(region_id);    \n" +
             "ALTER TABLE locations ADD FOREIGN KEY (country_id) REFERENCES countries(country_id);\n" +
             "ALTER TABLE departments ADD FOREIGN KEY (location_id) REFERENCES locations(location_id);\n" +
@@ -283,9 +272,7 @@ class hr_schema implements Callable<Integer> {
 
         validateCall();
 
-        Function<String, String> escape =
-                target.equals("mysql") || target.equals("mariadb") ?
-                        MySQL.TEXT_BACKSLASH : PostgreSQL.TEXT_BACKSLASH;
+        Function<String, String> escape = MySQL.TEXT_BACKSLASH;
 
         SQLTable regions =
                 sqlInserts()
@@ -380,21 +367,21 @@ class hr_schema implements Callable<Integer> {
                 .get()
                 .setValue("manager_id", "NULL");
 
-        System.out.println(schemaCreate);
-        System.out.println(ddl);
+        System.out.println(schemaCreateMySQL);
+        System.out.println(ddlMySQL);
         System.out.println(regions);
         System.out.println(countries);
         System.out.println(jobs);
         System.out.println(locations);
         System.out.println(departments);
         System.out.println(employees);
-        System.out.println(foreignKeys);
+        System.out.println(foreignKeysMySQL);
 
         return 0;
     }
 
     public static void main(String... args) {
-        int exitCode = new CommandLine(new hr_schema()).execute(args);
+        int exitCode = new CommandLine(new hr_schema_mysql()).execute(args);
         System.exit(exitCode);
     }
 }
