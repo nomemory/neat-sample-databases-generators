@@ -5,6 +5,7 @@
 import net.andreinc.mockneat.abstraction.MockUnitString;
 import net.andreinc.mockneat.unit.text.sql.SQLTable;
 import net.andreinc.mockneat.unit.text.sql.escapers.MySQL;
+import net.andreinc.mockneat.unit.text.sql.escapers.PostgreSQL;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -39,9 +40,9 @@ import static picocli.CommandLine.Help.Visibility.ALWAYS;
         name = "hr_schema",
         mixinStandardHelpOptions = true,
         version = "1.0",
-        description = "Script to generate SQL Inserts for HR Schema (MySQL|MariaDB)"
+        description = "Script to generate SQL Inserts for HR Schema (PostgreSQL)"
 )
-class hr_schema_mysql implements Callable<Integer> {
+class hr_schema_postgresql implements Callable<Integer> {
 
     // const
     final int NUM_COUNTRIES = 241;
@@ -121,110 +122,72 @@ class hr_schema_mysql implements Callable<Integer> {
             "D"
     };
 
-    String schemaCreateMySQL =
-            "DROP SCHEMA IF EXISTS hr;\n" +
-            "CREATE SCHEMA hr COLLATE = utf8_general_ci;\n" +
-            "USE hr;";
+    String schemaCreatePostgreSQL =
+            "drop schema if exists hr cascade ;\n" +
+            "create schema hr;\n" +
+            "SET search_path TO hr;";
 
-    String ddlMySQL =
-            "CREATE TABLE regions (\n" +
-                    "\tregion_id INT (11) UNSIGNED NOT NULL,\n" +
-                    "\tregion_name VARCHAR(25),\n" +
-                    "\tPRIMARY KEY (region_id)\n" +
-                    "\t);\n" +
-                    "\n" +
-            "CREATE TABLE countries (\n" +
-                    "\tcountry_id CHAR(2) NOT NULL,\n" +
-                    "\tcountry_name VARCHAR(128),\n" +
-                    "\tregion_id INT (11) UNSIGNED NOT NULL,\n" +
-                    "\tPRIMARY KEY (country_id)\n" +
-                    ");\n" +
-                    "\n" +
-                    "\n" +
-            "CREATE TABLE locations (\n" +
-                    "\tlocation_id INT (11) UNSIGNED NOT NULL AUTO_INCREMENT,\n" +
-                    "\tstreet_address VARCHAR(40),\n" +
-                    "\tpostal_code VARCHAR(12),\n" +
-                    "\tcity VARCHAR(30) NOT NULL,\n" +
-                    "\tstate_province VARCHAR(25),\n" +
-                    "\tcountry_id CHAR(2) NOT NULL,\n" +
-                    "\tPRIMARY KEY (location_id)\n" +
-                    "\t);\n" +
-                    "\n" +
-            "CREATE TABLE departments (\n" +
-                    "\tdepartment_id INT (11) UNSIGNED NOT NULL,\n" +
-                    "\tdepartment_name VARCHAR(30) NOT NULL,\n" +
-                    "\tmanager_id INT (11) UNSIGNED,\n" +
-                    "\tlocation_id INT (11) UNSIGNED,\n" +
-                    "\tPRIMARY KEY (department_id)\n" +
-                    "\t);\n" +
-                    "\n" +
-            "CREATE TABLE jobs (\n" +
-                    "\tjob_id VARCHAR(10) NOT NULL,\n" +
-                    "\tjob_title VARCHAR(35) NOT NULL,\n" +
-                    "\tmin_salary DECIMAL(8, 0) UNSIGNED,\n" +
-                    "\tmax_salary DECIMAL(8, 0) UNSIGNED,\n" +
-                    "\tPRIMARY KEY (job_id)\n" +
-                    "\t);\n" +
-                    "\n" +
-            "CREATE TABLE employees (\n" +
-                    "\temployee_id INT (11) UNSIGNED NOT NULL,\n" +
-                    "\tfirst_name VARCHAR(20),\n" +
-                    "\tlast_name VARCHAR(25) NOT NULL,\n" +
-                    "\temail VARCHAR(128) NOT NULL,\n" +
-                    "\tphone_number VARCHAR(20),\n" +
-                    "\thire_date DATE NOT NULL,\n" +
-                    "\tjob_id VARCHAR(10) NOT NULL,\n" +
-                    "\tsalary DECIMAL(8, 2) NOT NULL,\n" +
-                    "\tcommission_pct DECIMAL(2, 2),\n" +
-                    "\tmanager_id INT (11) UNSIGNED,\n" +
-                    "\tdepartment_id INT (11) UNSIGNED,\n" +
-                    "\tPRIMARY KEY (employee_id)\n" +
-                    "\t);\n" +
-                    "\n" +
-            "CREATE TABLE job_history (\n" +
-                    "\temployee_id INT (11) UNSIGNED NOT NULL,\n" +
-                    "\tstart_date DATE NOT NULL,\n" +
-                    "\tend_date DATE NOT NULL,\n" +
-                    "\tjob_id VARCHAR(10) NOT NULL,\n" +
-                    "\tdepartment_id INT (11) UNSIGNED NOT NULL\n" +
-                    "\t);\n" +
-                    "\n" +
-            "ALTER TABLE job_history ADD UNIQUE INDEX (\n" +
-                    "\temployee_id,\n" +
-                    "\tstart_date\n" +
-                    "\t);\n" +
-                    "\n" +
-                    "\n" +
-            "CREATE VIEW emp_details_view\n" +
-                    "AS\n" +
-                    "SELECT e.employee_id,\n" +
-                    "\te.job_id,\n" +
-                    "\te.manager_id,\n" +
-                    "\te.department_id,\n" +
-                    "\td.location_id,\n" +
-                    "\tl.country_id,\n" +
-                    "\te.first_name,\n" +
-                    "\te.last_name,\n" +
-                    "\te.salary,\n" +
-                    "\te.commission_pct,\n" +
-                    "\td.department_name,\n" +
-                    "\tj.job_title,\n" +
-                    "\tl.city,\n" +
-                    "\tl.state_province,\n" +
-                    "\tc.country_name,\n" +
-                    "\tr.region_name\n" +
-                    "FROM employees e,\n" +
-                    "\tdepartments d,\n" +
-                    "\tjobs j,\n" +
-                    "\tlocations l,\n" +
-                    "\tcountries c,\n" +
-                    "\tregions r\n" +
-                    "WHERE e.department_id = d.department_id\n" +
-                    "\tAND d.location_id = l.location_id\n" +
-                    "\tAND l.country_id = c.country_id\n" +
-                    "\tAND c.region_id = r.region_id\n" +
-                    "\tAND j.job_id = e.job_id;";
+    String ddlPostgreSQL =
+            "create table regions (\n" +
+                "\tregion_id INT primary key,\n" +
+                "\tregion_name VARCHAR(25)\n" +
+                ");\n" +
+                "\n" +
+            "create table countries (\n" +
+                "\tcountry_id CHAR(2) primary key,\n" +
+                "\tcountry_name VARCHAR(128),\n" +
+                "\tregion_id INT\n" +
+                ");\n" +
+                "\n" +
+            "create table locations (\n" +
+                "\tlocation_id INT primary key,\n" +
+                "\tstreet_address VARCHAR(40),\n" +
+                "\tpostal_code VARCHAR(12),\n" +
+                "\tcity VARCHAR(30) not null,\n" +
+                "\tstate_province VARCHAR(25),\n" +
+                "\tcountry_id CHAR(2) not null\n" +
+                ");\n" +
+                "\n" +
+            "create table departments (\n" +
+                "\tdepartment_id INT primary key,\n" +
+                "\tdepartment_name VARCHAR(30) not null,\n" +
+                "\tmanager_id INT,\n" +
+                "\tlocation_id INT\n" +
+                ");\n" +
+                "\n" +
+            "create table jobs (\n" +
+                "\tjob_id VARCHAR(10) primary key,\n" +
+                "\tjob_title VARCHAR(35) not null,\n" +
+                "\tmin_salary DECIMAL(8,0),\n" +
+                "\tmax_salary DECIMAL(8,0)\n" +
+                "\t);\n" +
+                "\t\n" +
+            "create table employees (\n" +
+                "\temployee_id INT primary key,\n" +
+                "\tfirst_name VARCHAR(20),\n" +
+                "\tlast_name VARCHAR(25) not null,\n" +
+                "\temail VARCHAR(128) not null,\n" +
+                "\tphone_number VARCHAR(20),\n" +
+                "\thire_date DATE not null,\n" +
+                "\tjob_id VARCHAR(10) not null,\n" +
+                "\tsalary DECIMAL(8, 2) not null,\n" +
+                "\tcommission_pct DECIMAL(2, 2),\n" +
+                "\tmanager_id INT,\n" +
+                "\tdepartment_id INT\n" +
+                "\t);\n" +
+                "\t\n" +
+            "create table job_history (\n" +
+                "\temployee_id INT primary key,\n" +
+                "\tstart_date DATE not null,\n" +
+                "\tend_date DATE not null,\n" +
+                "\tjob_id VARCHAR(10) not null,\n" +
+                "\tdepartment_id INT \n" +
+                "\t);\n" +
+                "\t\n" +
+                "create unique index emp_sdate_ui on job_history (\n" +
+                "\temployee_id,\n" +
+                "\tstart_date\n" +
+                "\t);";
 
     String foreignKeysMySQL =
             "ALTER TABLE countries ADD FOREIGN KEY (region_id) REFERENCES regions(region_id);    \n" +
@@ -268,7 +231,7 @@ class hr_schema_mysql implements Callable<Integer> {
 
         validateCall();
 
-        Function<String, String> escape = MySQL.TEXT_BACKSLASH;
+        Function<String, String> escape = PostgreSQL.TEXT_BACKSLASH;
 
         SQLTable regions =
                 sqlInserts()
@@ -363,8 +326,8 @@ class hr_schema_mysql implements Callable<Integer> {
                 .get()
                 .setValue("manager_id", "NULL");
 
-        System.out.println(schemaCreateMySQL);
-        System.out.println(ddlMySQL);
+        System.out.println(schemaCreatePostgreSQL);
+        System.out.println(ddlPostgreSQL);
         System.out.println(regions);
         System.out.println(countries);
         System.out.println(jobs);
@@ -377,7 +340,7 @@ class hr_schema_mysql implements Callable<Integer> {
     }
 
     public static void main(String... args) {
-        int exitCode = new CommandLine(new hr_schema_mysql()).execute(args);
+        int exitCode = new CommandLine(new hr_schema_postgresql()).execute(args);
         System.exit(exitCode);
     }
 }
