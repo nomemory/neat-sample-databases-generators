@@ -29,13 +29,13 @@ jbang script_name.java >> inserts.sql
 After cloning the project:
 
 ```sh
-jbang scripts/hr_schema.java >> inserts.sql
+jbang scripts/hr_schema_mysql.java >> inserts.sql
 ```
 
 Most scripts support various options (e.g.: generating more data, or target various databases). The best way to see the options a script is offering:
 
 ```sh
-jbang scripts/hr_schema.java --help
+jbang scripts/hr_schema_mysql.java --help
 ```
 
 Output:
