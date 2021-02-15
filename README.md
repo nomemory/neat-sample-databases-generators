@@ -11,12 +11,6 @@ sdk install java
 sdk install jbang
 ```
 
-Scripts can be run using:
-
-```
-jbang script_name.java >> inserts.sql
-```
-
 # List of scripts
 
 | Script | Schema | Targets |
