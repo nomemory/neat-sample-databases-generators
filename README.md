@@ -21,7 +21,8 @@ jbang script_name.java >> inserts.sql
 
 | Script | Schema | Targets |
 | ------ | ------ | ------- |
-| scripts/hr_schema.java | [HR](#hr-schema-sql) | mysql, postgresql |
+| scripts/hr_schema_mysql.java | [HR](#hr-schema-sql) | mysql, mariadb |
+| scripts/hr_schema_postgresql.java | [HR](#hr-schema-sql) | postgresql |
 
 # Running the scripts
 
