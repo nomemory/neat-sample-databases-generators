@@ -18,6 +18,7 @@ Contributions are welcomed!
 
 | Script | Schema | Targets |
 | ------ | ------ | ------- |
+| [scripts/classicmodels_mysql.java](https://github.com/nomemory/neat-sample-databases-generators/blob/main/scripts/classicmodels_mysql.java) | [classicmodels](#classicmodels-sql) | mysql, mariadb |
 | [scripts/hr_schema_mysql.java](https://github.com/nomemory/neat-sample-databases-generators/blob/main/scripts/hr_schema_mysql.java) | [HR](#hr-schema-sql) | mysql, mariadb |
 | [scripts/hr_schema_postgresql.java](https://github.com/nomemory/neat-sample-databases-generators/blob/main/scripts/hr_schema_postgresql.java) | [HR](#hr-schema-sql) | postgresql |
 
@@ -44,3 +45,10 @@ If you ever had the chance to work with [Oracle DB](https://www.oracle.com/ro/da
 It models an HR application containing information about the Company's Locations, Departements, Employees and their Managers.
 
 ![HR Schema](https://github.com/nomemory/neat-sample-databases-generators/blob/main/assets/hr-schema.png)
+
+## classicmodels (SQL)
+
+This is a classic schema describing a possible on-line shop. 
+It's one of the official sample schemas for MySQL.
+
+![classicmodels](https://github.com/nomemory/neat-sample-databases-generators/blob/main/assets/classicmodels_schema.png)
