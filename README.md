@@ -39,6 +39,8 @@ jbang scripts/hr_schema_mysql.java --help
 
 # Supported Schemas
 
+ER diagrams were generated using [DBeaver](https://dbeaver.io/). 
+
 ## HR Schema (SQL)
 
 If you ever had the chance to work with [Oracle DB](https://www.oracle.com/ro/database/technologies/) this is probably one of the most known sample schemas to play with. 
