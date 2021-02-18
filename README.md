@@ -51,7 +51,8 @@ It models an HR application containing information about the Company's Locations
 
 ## classicmodels (SQL)
 
-This is a classic schema describing a possible on-line shop. 
+This is a classic schema describing a online-shop. 
+
 It's one of the official sample schemas for MySQL.
 
 ![classicmodels](https://github.com/nomemory/neat-sample-databases-generators/blob/main/assets/classicmodels_schema.png)
