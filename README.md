@@ -1,7 +1,8 @@
-In case you ever needed scripts to generate data for pre-defined sample databases (databases that are already modeled for various real-life scenarios), this repositoru contains exactly this.
+A list of scripts that are genering DDL and DML scripts to fill-up sample schemas with data.
 
-Scripts should be run using [jbang](https://github.com/jbangdev/jbang).
-To install jbang - check the official documentation - or simply:
+Scripts are written in Java, and can be run using [jbang](https://github.com/jbangdev/jbang).
+
+To install jbang - [check the official documentation](https://github.com/jbangdev/jbang) - or simply:
 
 ```sh
 curl -s "https://get.sdkman.io" | bash 
