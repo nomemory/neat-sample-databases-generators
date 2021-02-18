@@ -230,7 +230,16 @@ class classicmodels_mysql implements Callable<Integer> {
             "  `buyPrice` decimal(10,2) NOT NULL,\n" +
             "  `MSRP` decimal(10,2) NOT NULL,\n" +
             "  PRIMARY KEY (`productCode`)\n" +
-            ") ENGINE=InnoDB DEFAULT CHARSET=latin1;\n";
+            ") ENGINE=InnoDB DEFAULT CHARSET=latin1;\n" +
+            "CREATE TABLE `orderdetails` (\n" +
+            "  `orderNumber` int(11) NOT NULL,\n" +
+            "  `productCode` varchar(15) NOT NULL,\n" +
+            "  `quantityOrdered` int(11) NOT NULL,\n" +
+            "  `priceEach` decimal(10,2) NOT NULL,\n" +
+            "  `orderLineNumber` smallint(6) NOT NULL,\n" +
+            "  PRIMARY KEY (`orderNumber`,`productCode`),\n" +
+            "  KEY `productCode` (`productCode`)\n" +
+            ") ENGINE=InnoDB DEFAULT CHARSET=latin1;";
 
     String foreignKeysMySQL =
             "ALTER TABLE customers ADD FOREIGN KEY (salesRepEmployeeNumber) REFERENCES employees(employeeNumber);\n" +
@@ -238,7 +247,9 @@ class classicmodels_mysql implements Callable<Integer> {
             "ALTER TABLE employees ADD FOREIGN KEY (officeCode) REFERENCES offices(officeCode);\n" +
             "ALTER TABLE orders ADD FOREIGN KEY (customerNumber) REFERENCES customers(customerNumber);\n" +
             "ALTER TABLE payments ADD FOREIGN KEY (customerNumber) REFERENCES customers(customerNumber);\n" +
-            "ALTER TABLE products ADD FOREIGN KEY (productLine) REFERENCES productlines(productLine);";
+            "ALTER TABLE products ADD FOREIGN KEY (productLine) REFERENCES productlines(productLine);\n" +
+            "ALTER TABLE orderdetails ADD FOREIGN KEY(orderNumber) REFERENCES order(orderNumber);\n" +
+            "ALTER TABLE orderdetails ADD FOREIGN KEY(productCode) REFERENCES products(productCode);\n";
 
     String[] customerNameSuff = {
             ", Co.",
@@ -685,7 +696,7 @@ class classicmodels_mysql implements Callable<Integer> {
                 .column("quantityOrdered", ints().range(1, 128))
                 .column("priceEach", ints().range(5, 10000))
                 .column("orderLineNumber", ints().range(1,24))
-                .table(numOrders * 4)
+                .table(numOrders)
                 .get();
 
 
@@ -703,6 +714,7 @@ class classicmodels_mysql implements Callable<Integer> {
         System.out.println(ddlMySQL);
         System.out.println(customers);
         System.out.println(employees);
+        System.out.println(offices);
         System.out.println(productLines);
         System.out.println(products);
         System.out.println(orders);
