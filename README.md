@@ -1,7 +1,6 @@
-A collection of scripts that are generating data for various SQL Sample schemas.
+In case you ever needed scripts to generate data for pre-defined sample databases (databases that are already modeled for various real-life scenarios), this repositoru contains exactly this.
 
 Scripts should be run using [jbang](https://github.com/jbangdev/jbang).
-
 To install jbang - check the official documentation - or simply:
 
 ```sh
@@ -11,12 +10,16 @@ sdk install java
 sdk install jbang
 ```
 
+Data is generated using [mockneat](https://www.mockneat.com).
+
+Contributions are welcomed!
+
 # List of scripts
 
 | Script | Schema | Targets |
 | ------ | ------ | ------- |
 | [scripts/hr_schema_mysql.java](https://github.com/nomemory/neat-sample-databases-generators/blob/main/scripts/hr_schema_mysql.java) | [HR](#hr-schema-sql) | mysql, mariadb |
-| scripts/hr_schema_postgresql.java | [HR](#hr-schema-sql) | postgresql |
+| [scripts/hr_schema_postgresql.java](https://github.com/nomemory/neat-sample-databases-generators/blob/main/scripts/hr_schema_postgresql.java) | [HR](#hr-schema-sql) | postgresql |
 
 # Running the scripts
 
