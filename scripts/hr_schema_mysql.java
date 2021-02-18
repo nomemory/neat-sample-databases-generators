@@ -1,6 +1,6 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 //DEPS info.picocli:picocli:4.6.1
-//DEPS net.andreinc:mockneat:0.4.5
+//DEPS net.andreinc:mockneat:0.4.6
 
 import net.andreinc.mockneat.abstraction.MockUnitString;
 import net.andreinc.mockneat.unit.text.sql.SQLTable;
@@ -95,10 +95,14 @@ class hr_schema_mysql implements Callable<Integer> {
     };
 
     String[] streetPrefixes = new String[]{
-            "Ave",
-            "St",
-            "Blvd",
-            "Rd"
+        "Ave",
+        "Avenue",
+        "St",
+        "Street",
+        "Blvd",
+        "Rd",
+        "Road",
+        "Hill"
     };
 
     String[] jobNames = new String[] {
