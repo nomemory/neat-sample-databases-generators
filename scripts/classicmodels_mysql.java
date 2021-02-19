@@ -84,11 +84,11 @@ class classicmodels_mysql implements Callable<Integer> {
     @CommandLine.Option(
             names = { "-o", "--offices" },
             description = "The number of offices to be generated",
-            defaultValue = "50",
+            defaultValue = "100",
             showDefaultValue = ALWAYS
 
     )
-    int numOffices = 50;
+    int numOffices = 100;
 
     @CommandLine.Option(
             names = { "-s", "--vps-sales" },
@@ -152,7 +152,7 @@ class classicmodels_mysql implements Callable<Integer> {
     String ddlMySQL =
             "CREATE TABLE `customers` (\n" +
             "  `customerNumber` int(11) NOT NULL,\n" +
-            "  `customerName` varchar(50) NOT NULL,\n" +
+            "  `customerName` varchar(256) NOT NULL,\n" +
             "  `contactLastName` varchar(50) NOT NULL,\n" +
             "  `contactFirstName` varchar(50) NOT NULL,\n" +
             "  `phone` varchar(50) NOT NULL,\n" +
@@ -161,7 +161,7 @@ class classicmodels_mysql implements Callable<Integer> {
             "  `city` varchar(50) NOT NULL,\n" +
             "  `state` varchar(50) DEFAULT NULL,\n" +
             "  `postalCode` varchar(15) DEFAULT NULL,\n" +
-            "  `country` varchar(50) NOT NULL,\n" +
+            "  `country` varchar(128) NOT NULL,\n" +
             "  `salesRepEmployeeNumber` int(11) DEFAULT NULL,\n" +
             "  `creditLimit` decimal(10,2) DEFAULT NULL,\n" +
             "  PRIMARY KEY (`customerNumber`)\n" +
@@ -248,7 +248,7 @@ class classicmodels_mysql implements Callable<Integer> {
             "ALTER TABLE orders ADD FOREIGN KEY (customerNumber) REFERENCES customers(customerNumber);\n" +
             "ALTER TABLE payments ADD FOREIGN KEY (customerNumber) REFERENCES customers(customerNumber);\n" +
             "ALTER TABLE products ADD FOREIGN KEY (productLine) REFERENCES productlines(productLine);\n" +
-            "ALTER TABLE orderdetails ADD FOREIGN KEY(orderNumber) REFERENCES order(orderNumber);\n" +
+            "ALTER TABLE orderdetails ADD FOREIGN KEY(orderNumber) REFERENCES orders(orderNumber);\n" +
             "ALTER TABLE orderdetails ADD FOREIGN KEY(productCode) REFERENCES products(productCode);\n";
 
     String[] customerNameSuff = {
@@ -581,6 +581,7 @@ class classicmodels_mysql implements Callable<Integer> {
                         .column("addressLine1", addressLine1, escAsStr)
                         .column("addressLine2", addressLine2, escAsStrOrNull)
                         .column("state", state, escAsStrOrNull)
+                        .column("country", countries(), escAsStr)
                         .column("postalCode", postalCode, escAsStr)
                         .column("territory", from(territories), escAsStr)
                         .table(officesIds.size())
@@ -705,7 +706,7 @@ class classicmodels_mysql implements Callable<Integer> {
                 .tableName("payments")
                 .column("customerNumber", customers.fromColumn("customerNumber"))
                 .column("checkNumber", strings().size(8).type(ALPHA_NUMERIC).format(UPPER_CASE), escAsStr)
-                .column("paymentDate", localDates().thisYear().display(ISO_DATE))
+                .column("paymentDate", localDates().thisYear().display(ISO_DATE), escAsStr)
                 .column("amount", ints().range(100, 99999))
                 .table(numPayments)
                 .get();
