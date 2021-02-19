@@ -38,6 +38,8 @@ Most scripts support various options (e.g.: generating more data, or target vari
 jbang scripts/hr_schema_mysql.java --help
 ```
 
+Each subsequent run will generate arbitrary data, different than the previous run.
+
 # Supported Schemas
 
 ER diagrams were generated using [DBeaver](https://dbeaver.io/). 
