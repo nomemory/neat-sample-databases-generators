@@ -20,6 +20,7 @@ Contributions are welcomed!
 | Script | Schema | Targets |
 | ------ | ------ | ------- |
 | [scripts/classicmodels_mysql.java](https://github.com/nomemory/neat-sample-databases-generators/blob/main/scripts/classicmodels_mysql.java) | [classicmodels](#classicmodels-sql) | mysql, mariadb |
+| [scripts/classicmodels_postgresql.java](https://github.com/nomemory/neat-sample-databases-generators/blob/main/scripts/classicmodels_postgresql.java) | [classicmodels](#classicmodels-sql) | postgresql |
 | [scripts/hr_schema_mysql.java](https://github.com/nomemory/neat-sample-databases-generators/blob/main/scripts/hr_schema_mysql.java) | [HR](#hr-schema-sql) | mysql, mariadb |
 | [scripts/hr_schema_postgresql.java](https://github.com/nomemory/neat-sample-databases-generators/blob/main/scripts/hr_schema_postgresql.java) | [HR](#hr-schema-sql) | postgresql |
 
